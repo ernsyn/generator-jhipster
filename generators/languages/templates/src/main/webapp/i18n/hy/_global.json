@@ -1,3 +1,21 @@
+<%#
+ Copyright 2013-2017 the original author or authors from the JHipster project.
+
+ This file is part of the JHipster project, see http://www.jhipster.tech/
+ for more information.
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+-%>
 {
     "global": {
         "title": "<%= capitalizedBaseName %>",
@@ -43,15 +61,15 @@
             "newpassword.placeholder": "Նոր գաղտնաբառ",
             "confirmpassword": "Նոր գաղտնաբառի հաստատում",
             "confirmpassword.placeholder": "Հաստատեք նոր գաղտնաբառը",
-            "email": "E-mail",
-            "email.placeholder": "Ձեր e-mail"
+            "email": "Email",
+            "email.placeholder": "Ձեր email"
         },
         "messages": {
             "info": {
                 <%_ if (clientFramework === 'angular1') { _%>
                 "authenticated": "Եթե դուք ցանկանում եք  <a class=\"alert-link\" href=\"\" ng-click=\"vm.login()\">մուտք գործել</a>, դուք կարող եք փորձել հետևյալ հաշիվները:<br/>- Administrator (login=\"admin\" and password=\"admin\") <br/>- User (login=\"user\" and password=\"user\").",
                 "register": "Դուք դեռ չունե՞ք հաշիվ <a class=\"alert-link\" href=\"\" ng-click=\"vm.register()\">Գրանցել նոր հաշիվ</a>"
-                <%_ } else if (clientFramework === 'angular2') { _%>
+                <%_ } else { _%>
                 "authenticated": {
                     "prefix": "Եթե դուք ցանկանում եք ",
                     "link": "Մուտք գործել",
@@ -79,10 +97,10 @@
                     "maxlength": "Գաղտնաբառի հաստատումը չի կարող լինել ավելի երկար, քան 50 նիշ:"
                 },
                 "email": {
-                    "required": "Ձեր e-mail պետք է նշված լինի:",
-                    "invalid": "Ձեր e-mail պետք է նշված լինի:",
-                    "minlength": "Ձեր e-mail երկարության հաստատումը պետք է լինի առնվազն 5 նիշ:",
-                    "maxlength": "Ձեր e-mail հաստատումը չի կարող լինել ավելի երկար, քան 50 նիշ:"
+                    "required": "Ձեր email պետք է նշված լինի:",
+                    "invalid": "Ձեր email պետք է նշված լինի:",
+                    "minlength": "Ձեր email երկարության հաստատումը պետք է լինի առնվազն 5 նիշ:",
+                    "maxlength": "Ձեր email հաստատումը չի կարող լինել ավելի երկար, քան 50 նիշ:"
                 }
             }
         },
@@ -91,7 +109,8 @@
         },
         "ribbon": {
             "dev":"Development"
-        }
+        },
+        "item-count": "Showing {{first}} - {{second}} of {{total}} items."
     },
     "entity": {
         "action": {
@@ -132,7 +151,7 @@
         "NotNull": "Դաշտը {{ fieldName }} չի կարող լինել դատարկ!",
         "Size": "Դաշտը {{ fieldName }} չի համապատասխանում փոքրագ./առավելագ. չափերին!",
         "userexists": "Օգտվողի անունը արդեն օգտագործվում է!",
-        "emailexists": "E-mail արդեն օգտագործվում է!",
+        "emailexists": "Email արդեն օգտագործվում է!",
         "idexists": "Նորը {{ entityName }} չի կարող ունենալ ID"
     },
     "footer": "Սա Ձեր footer է"

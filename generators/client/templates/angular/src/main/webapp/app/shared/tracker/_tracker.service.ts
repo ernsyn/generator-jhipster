@@ -1,8 +1,27 @@
+<%#
+ Copyright 2013-2017 the original author or authors from the JHipster project.
+
+ This file is part of the JHipster project, see http://www.jhipster.tech/
+ for more information.
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+-%>
 import { Injectable, Inject } from '@angular/core';
 import { Router, NavigationEnd } from '@angular/router';
 import { Observable, Observer, Subscription } from 'rxjs/Rx';
 
 import { CSRFService } from '../auth/csrf.service';
+import { WindowRef } from './window.service';
 <%_ if (authenticationType === 'jwt' || authenticationType === 'uaa') { _%>
 import { AuthServerProvider } from '../auth/auth-jwt.service';
 <%_ } _%>
@@ -10,9 +29,8 @@ import { AuthServerProvider } from '../auth/auth-jwt.service';
 import { AuthServerProvider } from '../auth/auth-oauth2.service';
 <%_ } _%>
 
-<%_ // TODO find a better way to import these libs here _%>
-import SockJS = require('sockjs-client');
-import Stomp = require('webstomp-client');
+import * as SockJS from 'sockjs-client';
+import * as Stomp from 'webstomp-client';
 
 @Injectable()
 export class <%=jhiPrefixCapitalized%>TrackerService {
@@ -30,21 +48,21 @@ export class <%=jhiPrefixCapitalized%>TrackerService {
         <%_ if (authenticationType === 'jwt' || authenticationType === 'uaa' || authenticationType === 'oauth2') { _%>
         private authServerProvider: AuthServerProvider,
         <%_ } _%>
-        private $document: Document,
-        private $window: Window,
+        private $window: WindowRef,
         private csrfService: CSRFService
     ) {
         this.connection = this.createConnection();
         this.listener = this.createListener();
     }
 
-    connect () {
+    connect() {
         if (this.connectedPromise === null) {
           this.connection = this.createConnection();
         }
-        // building absolute path so that websocket doesnt fail when deploying with a context path
-        const loc = this.$window.location;
-        let url = '//' + loc.host + loc.pathname + 'websocket/tracker';
+        // building absolute path so that websocket doesn't fail when deploying with a context path
+        const loc = this.$window.nativeWindow.location;
+        let url;
+        url = '//' + loc.host + loc.pathname + 'websocket/tracker';
         <%_ if (authenticationType === 'jwt' || authenticationType === 'uaa' || authenticationType === 'oauth2') { _%>
         const authToken = this.authServerProvider.getToken()<% if (authenticationType === 'oauth2') { %>.access_token<% } %>;
         if (authToken) {
@@ -53,7 +71,7 @@ export class <%=jhiPrefixCapitalized%>TrackerService {
         <%_ } _%>
         const socket = new SockJS(url);
         this.stompClient = Stomp.over(socket);
-        let headers = {};
+        const headers = {};
         <%_ if (authenticationType === 'session') { _%>
         headers['X-XSRF-TOKEN'] = this.csrfService.getCSRF('XSRF-TOKEN');
         <%_ } _%>
@@ -72,7 +90,7 @@ export class <%=jhiPrefixCapitalized%>TrackerService {
         });
     }
 
-    disconnect () {
+    disconnect() {
         if (this.stompClient !== null) {
             this.stompClient.disconnect();
             this.stompClient = null;
@@ -84,7 +102,7 @@ export class <%=jhiPrefixCapitalized%>TrackerService {
         this.alreadyConnectedOnce = false;
     }
 
-    receive () {
+    receive() {
         return this.listener;
     }
 
@@ -98,15 +116,15 @@ export class <%=jhiPrefixCapitalized%>TrackerService {
         }
     }
 
-    subscribe () {
+    subscribe() {
         this.connection.then(() => {
-            this.subscriber = this.stompClient.subscribe('/topic/tracker', data => {
+            this.subscriber = this.stompClient.subscribe('/topic/tracker', (data) => {
                 this.listenerObserver.next(JSON.parse(data.body));
             });
         });
     }
 
-    unsubscribe () {
+    unsubscribe() {
         if (this.subscriber !== null) {
             this.subscriber.unsubscribe();
         }
@@ -114,7 +132,7 @@ export class <%=jhiPrefixCapitalized%>TrackerService {
     }
 
     private createListener(): Observable<any> {
-        return new Observable(observer => {
+        return new Observable((observer) => {
             this.listenerObserver = observer;
         });
     }

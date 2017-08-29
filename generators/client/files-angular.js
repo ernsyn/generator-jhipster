@@ -1,11 +1,28 @@
-'use strict';
-
+/**
+ * Copyright 2013-2017 the original author or authors from the JHipster project.
+ *
+ * This file is part of the JHipster project, see http://www.jhipster.tech/
+ * for more information.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 const mkdirp = require('mkdirp');
+const constants = require('../generator-constants');
+
 /* Constants use throughout */
-const constants = require('../generator-constants'),
-    MAIN_SRC_DIR = constants.CLIENT_MAIN_SRC_DIR,
-    TEST_SRC_DIR = constants.CLIENT_TEST_SRC_DIR,
-    ANGULAR_DIR = constants.ANGULAR_DIR;
+const MAIN_SRC_DIR = constants.CLIENT_MAIN_SRC_DIR;
+const TEST_SRC_DIR = constants.CLIENT_TEST_SRC_DIR;
+const ANGULAR_DIR = constants.ANGULAR_DIR;
 
 /**
  * The default is to use a file path string. It implies use of the template method.
@@ -16,13 +33,17 @@ const files = {
         {
             templates: [
                 '_package.json',
+                '_proxy.conf.json',
                 '_tsconfig.json',
+                '_tsconfig-aot.json',
                 '_tslint.json',
-                '_angular-cli.json',
+                '_.angular-cli.json',
+                'webpack/_utils.js',
                 'webpack/_webpack.common.js',
                 'webpack/_webpack.dev.js',
                 'webpack/_webpack.prod.js',
-                'webpack/_webpack.vendor.js'
+                'webpack/_webpack.test.js',
+                { file: 'webpack/logo-jhipster.png', method: 'copy' }
             ]
         }
     ],
@@ -35,7 +56,14 @@ const files = {
             templates: [
                 'content/css/_global.css',
                 'content/css/_vendor.css',
-                { file: 'content/css/_documentation.css', method: 'copy' }
+                'content/css/_documentation.css'
+            ]
+        },
+        {
+            condition: generator => !generator.useSass && generator.enableI18nRTL,
+            path: MAIN_SRC_DIR,
+            templates: [
+                'content/css/_rtl.css',
             ]
         }
     ],
@@ -44,14 +72,22 @@ const files = {
             condition: generator => generator.useSass,
             path: MAIN_SRC_DIR,
             templates: [
+                'content/scss/__bootstrap-variables.scss',
                 'content/scss/_global.scss',
-                'content/scss/_vendor.scss',
+                'content/scss/_vendor.scss'
+            ]
+        },
+        {
+            condition: generator => generator.useSass && generator.enableI18nRTL,
+            path: MAIN_SRC_DIR,
+            templates: [
+                'content/scss/_rtl.scss',
             ]
         },
         {
             condition: generator => generator.useSass,
             templates: [
-                { file: '_postcss.config.js', method: 'copy' }
+                '_postcss.config.js'
             ]
         }
     ],
@@ -70,7 +106,7 @@ const files = {
             path: MAIN_SRC_DIR,
             templates: [
                 'swagger-ui/_index.html',
-                { file: 'swagger-ui/images/_throbber.gif', method: 'copy' }
+                { file: 'swagger-ui/dist/images/_throbber.gif', method: 'copy' }
             ]
         }
     ],
@@ -79,9 +115,11 @@ const files = {
             path: MAIN_SRC_DIR,
             templates: [
                 { file: '_favicon.ico', method: 'copy' },
-                { file: '_robots.txt', method: 'copy' },
-                { file: '_404.html', method: 'copy' },
-                { file: '_index.html', method: 'template'}
+                '_robots.txt',
+                '_404.html',
+                '_index.html',
+                '_manifest.webapp',
+                '_sw.js'
             ]
         }
     ],
@@ -90,6 +128,7 @@ const files = {
             path: ANGULAR_DIR,
             templates: [
                 '_app.main.ts',
+                '_app.main-aot.ts',
                 '_app.route.ts',
                 '_app.module.ts',
                 '_app.constants.ts',
@@ -97,7 +136,7 @@ const files = {
                 '_vendor.ts',
                 'blocks/config/_prod.config.ts',
                 'blocks/config/_uib-pagination.config.ts',
-                //interceptors
+                // interceptors
                 'blocks/interceptor/_errorhandler.interceptor.ts',
                 'blocks/interceptor/_notification.interceptor.ts',
                 'blocks/interceptor/_http.provider.ts'
@@ -142,7 +181,7 @@ const files = {
                 { file: 'layouts/navbar/_navbar.component.html', method: 'processHtml' },
                 'layouts/footer/_footer.component.ts',
                 { file: 'layouts/footer/_footer.component.html', method: 'processHtml' },
-                { file:'layouts/error/_error.route.ts', method: 'processJs' },
+                { file: 'layouts/error/_error.route.ts', method: 'processJs' },
                 { file: 'layouts/error/_error.component.ts', method: 'processJs' },
                 { file: 'layouts/error/_error.component.html', method: 'processHtml' }
             ]
@@ -184,7 +223,7 @@ const files = {
                 { file: 'account/activate/_activate.component.ts', method: 'processJs' },
                 { file: 'account/activate/_activate.component.html', method: 'processHtml' },
                 'account/activate/_activate.service.ts',
-                { file:'account/password/_password.route.ts', method: 'processJs' },
+                { file: 'account/password/_password.route.ts', method: 'processJs' },
                 'account/password/_password-strength-bar.component.ts',
                 { file: 'account/password/_password.component.ts', method: 'processJs' },
                 { file: 'account/password/_password.component.html', method: 'processHtml' },
@@ -259,12 +298,6 @@ const files = {
                 { file: 'admin/_admin.route.ts', method: 'processJs' },
                 'admin/_admin.module.ts',
                 // admin modules
-                { file: 'admin/audits/_audits.route.ts', method: 'processJs' },
-                'admin/audits/_audit-data.model.ts',
-                'admin/audits/_audit.model.ts',
-                { file: 'admin/audits/_audits.component.ts', method: 'processJs' },
-                { file: 'admin/audits/_audits.component.html', method: 'processHtml' },
-                'admin/audits/_audits.service.ts',
                 { file: 'admin/configuration/_configuration.route.ts', method: 'processJs' },
                 { file: 'admin/configuration/_configuration.component.ts', method: 'processJs' },
                 { file: 'admin/configuration/_configuration.component.html', method: 'processHtml' },
@@ -292,13 +325,26 @@ const files = {
             ]
         },
         {
+            condition: generator => generator.devDatabaseType !== 'cassandra',
+            path: ANGULAR_DIR,
+            templates: [
+                { file: 'admin/audits/_audits.route.ts', method: 'processJs' },
+                'admin/audits/_audit-data.model.ts',
+                'admin/audits/_audit.model.ts',
+                { file: 'admin/audits/_audits.component.ts', method: 'processJs' },
+                { file: 'admin/audits/_audits.component.html', method: 'processHtml' },
+                'admin/audits/_audits.service.ts'
+            ]
+        },
+        {
             condition: generator => generator.websocket === 'spring-websocket',
             path: ANGULAR_DIR,
             templates: [
                 { file: 'admin/tracker/_tracker.route.ts', method: 'processJs' },
                 { file: 'admin/tracker/_tracker.component.ts', method: 'processJs' },
                 { file: 'admin/tracker/_tracker.component.html', method: 'processHtml' },
-                'shared/tracker/_tracker.service.ts'
+                'shared/tracker/_tracker.service.ts',
+                'shared/tracker/_window.service.ts'
             ]
         },
         {
@@ -338,14 +384,17 @@ const files = {
                 'shared/_shared-libs.module.ts',
                 'shared/_shared-common.module.ts',
                 'shared/constants/_pagination.constants.ts',
-                //models
+                // models
+                'shared/model/_response-wrapper.model.ts',
+                'shared/model/_request-util.ts',
+                'shared/model/_base-entity.ts',
                 'shared/user/_account.model.ts',
-                //login
+                // login
                 'shared/login/_login.component.ts',
                 { file: 'shared/login/_login.component.html', method: 'processHtml' },
                 'shared/login/_login.service.ts',
                 'shared/login/_login-modal.service.ts',
-                //alert service code
+                // alert service code
                 'shared/alert/_alert.component.ts',
                 'shared/alert/_alert-error.component.ts'
             ]
@@ -354,7 +403,7 @@ const files = {
             condition: generator => generator.enableTranslation,
             path: ANGULAR_DIR,
             templates: [
-                'shared/language/_language.pipe.ts',
+                'shared/language/_find-language-from-key.pipe.ts',
                 'shared/language/_language.constants.ts',
                 'shared/language/_language.helper.ts'
             ]
@@ -372,7 +421,6 @@ const files = {
         {
             path: ANGULAR_DIR,
             templates: [
-                'shared/auth/_auth.service.ts',
                 'shared/auth/_csrf.service.ts',
                 'shared/auth/_state-storage.service.ts',
                 'shared/auth/_principal.service.ts',
@@ -418,11 +466,17 @@ const files = {
                 'spec/app/account/register/_register.component.spec.ts',
                 'spec/app/account/settings/_settings.component.spec.ts',
                 'spec/app/admin/health/_health.component.spec.ts',
-                'spec/app/admin/audits/_audits.component.spec.ts',
                 'spec/helpers/_spyobject.ts',
                 'spec/helpers/_mock-account.service.ts',
                 'spec/helpers/_mock-principal.service.ts',
                 'spec/helpers/_mock-route.service.ts'
+            ]
+        },
+        {
+            condition: generator => generator.devDatabaseType !== 'cassandra',
+            path: TEST_SRC_DIR,
+            templates: [
+                'spec/app/admin/audits/_audits.component.spec.ts',
             ]
         },
         {
@@ -452,6 +506,7 @@ const files = {
             templates: [
                 'e2e/account/_account.spec.ts',
                 'e2e/admin/_administration.spec.ts',
+                'e2e/page-objects/_jhi-page-objects.ts',
                 '_protractor.conf.js'
             ]
         }

@@ -1,28 +1,62 @@
+<%#
+ Copyright 2013-2017 the original author or authors from the JHipster project.
+
+ This file is part of the JHipster project, see http://www.jhipster.tech/
+ for more information.
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+-%>
 <%_
-var i18nToLoad = [entityInstance];
-for (var idx in fields) {
-    if (fields[idx].fieldIsEnum == true) {
+const i18nToLoad = [entityInstance];
+for (const idx in fields) {
+    if (fields[idx].fieldIsEnum === true) {
         i18nToLoad.push(fields[idx].enumInstance);
     }
 }
 _%>
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy<% if (fieldsContainImageBlob) { %>, ElementRef<% } %> } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Response } from '@angular/http';
 
+import { Observable } from 'rxjs/Rx';
 import { NgbActiveModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
-import { EventManager, AlertService<% if (enableTranslation) { %>, JhiLanguageService<% } %><% if (fieldsContainBlob) { %>, DataUtils<% } %> } from 'ng-jhipster';
+import { JhiEventManager, JhiAlertService<% if (fieldsContainBlob) { %>, JhiDataUtils<% } %> } from 'ng-jhipster';
 
 import { <%= entityAngularName %> } from './<%= entityFileName %>.model';
 import { <%= entityAngularName %>PopupService } from './<%= entityFileName %>-popup.service';
 import { <%= entityAngularName %>Service } from './<%= entityFileName %>.service';
-<%_ for (var rel of differentRelationships) { _%>
-import { <%= rel.otherEntityAngularName %>, <%= rel.otherEntityAngularName%>Service } from '../<%= rel.otherEntityModulePath %>';
-<%_ } _%>
 <%_
-// TODO replace ng-file-upload dependency by an ng2 depedency
-// TODO Find a better way to format dates so that it works with NgbDatePicker
+let hasRelationshipQuery = false;
+Object.keys(differentRelationships).forEach(key => {
+    const hasAnyRelationshipQuery = differentRelationships[key].some(rel =>
+        (rel.relationshipType === 'one-to-one' && rel.ownerSide === true && rel.otherEntityName !== 'user')
+            || rel.relationshipType !== 'one-to-many'
+    );
+    if (hasAnyRelationshipQuery) {
+        hasRelationshipQuery = true;
+    }
+    if (differentRelationships[key].some(rel => rel.relationshipType !== 'one-to-many')) {
+        const uniqueRel = differentRelationships[key][0];
+        if (uniqueRel.otherEntityAngularName !== entityAngularName) {
 _%>
+import { <%= uniqueRel.otherEntityAngularName %>, <%= uniqueRel.otherEntityAngularName%>Service } from '../<%= uniqueRel.otherEntityModulePath %>';
+<%_     }
+    }
+}); _%>
+<%_ if (hasRelationshipQuery) { _%>
+import { ResponseWrapper } from '../../shared';
+<%_ } _%>
+
 @Component({
     selector: '<%= jhiPrefix %>-<%= entityFileName %>-dialog',
     templateUrl: './<%= entityFileName %>-dialog.component.html'
@@ -30,76 +64,53 @@ _%>
 export class <%= entityAngularName %>DialogComponent implements OnInit {
 
     <%= entityInstance %>: <%= entityAngularName %>;
-    authorities: any[];
     isSaving: boolean;
     <%_
-    var queries = [];
-    var variables = [];
-    var hasManyToMany = false;
-    for (idx in relationships) {
-        var query;
-        var variableName;
-        hasManyToMany = hasManyToMany || relationships[idx].relationshipType == 'many-to-many';
-        if (relationships[idx].relationshipType == 'one-to-one' && relationships[idx].ownerSide == true && relationships[idx].otherEntityName != 'user') {
-            variableName = relationships[idx].relationshipFieldNamePlural.toLowerCase();
-            if (variableName === entityInstance) {
-                variableName += 'Collection';
-            }
-            var relationshipFieldName = "this." + entityInstance + "." + relationships[idx].relationshipFieldName;
-            query  = "this." + relationships[idx].otherEntityName + "Service.query({filter: '" + relationships[idx].otherEntityRelationshipName.toLowerCase() + "-is-null'}).subscribe((res: Response) => {"
-            if (dto === "no") {
-                query += "\n            if (!" + relationshipFieldName + " || !" + relationshipFieldName + ".id) {"
-            } else {
-                query += "\n            if (!" + relationshipFieldName + "Id) {"
-            }
-            query += "\n                this." + variableName + " = res.json();"
-            query += "\n            } else {"
-            query += "\n                this." + relationships[idx].otherEntityName + "Service.find(" + relationshipFieldName + (dto == 'no' ? ".id" : "Id") + ").subscribe((subRes: " + relationships[idx].otherEntityAngularName + ") => {"
-            query += "\n                    this." + variableName + " = [subRes].concat(res.json());"
-            query += "\n                }, (subRes: Response) => this.onError(subRes.json()));"
-            query += "\n            }"
-            query += "\n        }, (res: Response) => this.onError(res.json()));"
-        } else {
-            variableName = relationships[idx].otherEntityNameCapitalizedPlural.toLowerCase();
-            if (variableName === entityInstance) {
-                variableName += 'Collection';
-            }
-            query = 'this.' + relationships[idx].otherEntityName + 'Service.query().subscribe(';
-            query += '\n            (res: Response) => { this.' + variableName + ' = res.json(); }, (res: Response) => this.onError(res.json()));';
-        }
-        if (!contains(queries, query)) {
-            queries.push(query);
-            variables.push(variableName + ': ' + relationships[idx].otherEntityAngularName + '[];');
-        }
-    }
-    for (idx in variables) { %>
+    const query = generateEntityQueries(relationships, entityInstance, dto);
+    const queries = query.queries;
+    const variables = query.variables;
+    let hasManyToMany = query.hasManyToMany;
+    for (const idx in variables) { %>
     <%- variables[idx] %>
     <%_ } _%>
+    <%_ for (idx in fields) {
+        const fieldName = fields[idx].fieldName;
+        const fieldType = fields[idx].fieldType;
+        if (fieldType === 'LocalDate') { _%>
+    <%= fieldName %>Dp: any;
+        <%_ }
+    } _%>
+
     constructor(
         public activeModal: NgbActiveModal,
-        <%_ if (enableTranslation) { _%>
-        private jhiLanguageService: JhiLanguageService,
-        <%_ } _%>
         <%_ if (fieldsContainBlob) { _%>
-        private dataUtils: DataUtils,
+        private dataUtils: JhiDataUtils,
         <%_ } _%>
-        private alertService: AlertService,
-        private <%= entityInstance %>Service: <%= entityAngularName %>Service,<% for (idx in differentRelationships) {%>
-        private <%= differentRelationships[idx].otherEntityName %>Service: <%= differentRelationships[idx].otherEntityAngularName %>Service,<% } %>
-        private eventManager: EventManager
+        private alertService: JhiAlertService,
+        private <%= entityInstance %>Service: <%= entityAngularName %>Service,
+        <%_ Object.keys(differentRelationships).forEach(key => {
+            if (differentRelationships[key].some(rel => rel.relationshipType !== 'one-to-many')) {
+                const uniqueRel = differentRelationships[key][0];
+                if (uniqueRel.otherEntityAngularName !== entityAngularName) { _%>
+        private <%= uniqueRel.otherEntityName %>Service: <%= uniqueRel.otherEntityAngularName %>Service,
+        <%_
+                }
+            }
+        }); _%>
+        <%_ if (fieldsContainImageBlob) { _%>
+        private elementRef: ElementRef,
+        <%_ } _%>
+        private eventManager: JhiEventManager
     ) {
-        <%_ if (enableTranslation) { _%>
-        this.jhiLanguageService.setLocations(<%- toArrayString(i18nToLoad) %>);
-        <%_ } _%>
     }
 
     ngOnInit() {
         this.isSaving = false;
-        this.authorities = ['ROLE_USER', 'ROLE_ADMIN'];
         <%_ for (idx in queries) { _%>
         <%- queries[idx] %>
         <%_ } _%>
     }
+
     <%_ if (fieldsContainBlob) { _%>
     byteSize(field) {
         return this.dataUtils.byteSize(field);
@@ -109,53 +120,61 @@ export class <%= entityAngularName %>DialogComponent implements OnInit {
         return this.dataUtils.openFile(contentType, field);
     }
 
-    setFileData($event, <%= entityInstance %>, field, isImage) {
-        if ($event.target.files && $event.target.files[0]) {
-            let $file = $event.target.files[0];
-            if (isImage && !/^image\//.test($file.type)) {
-                return;
-            }
-            this.dataUtils.toBase64($file, (base64Data) => {
-                <%= entityInstance %>[field] = base64Data;
-                <%= entityInstance %>[`${field}ContentType`] = $file.type;
-            });
-        }
+    setFileData(event, entity, field, isImage) {
+        this.dataUtils.setFileData(event, entity, field, isImage);
     }
-   <%_ } _%>
-    clear () {
+
+    <%_ if (fieldsContainImageBlob) { _%>
+    clearInputImage(field: string, fieldContentType: string, idInput: string) {
+        this.dataUtils.clearInputImage(this.<%= entityInstance %>, this.elementRef, field, fieldContentType, idInput);
+    }
+
+    <%_ } _%>
+    <%_ } _%>
+    clear() {
         this.activeModal.dismiss('cancel');
     }
 
-    save () {
+    save() {
         this.isSaving = true;
         if (this.<%= entityInstance %>.id !== undefined) {
-            this.<%= entityInstance %>Service.update(this.<%= entityInstance %>)
-                .subscribe((res: <%= entityAngularName %>) => this.onSaveSuccess(res), (res: Response) => this.onSaveError(res.json()));
+            this.subscribeToSaveResponse(
+                this.<%= entityInstance %>Service.update(this.<%= entityInstance %>));
         } else {
-            this.<%= entityInstance %>Service.create(this.<%= entityInstance %>)
-                .subscribe((res: <%= entityAngularName %>) => this.onSaveSuccess(res), (res: Response) => this.onSaveError(res.json()));
+            this.subscribeToSaveResponse(
+                this.<%= entityInstance %>Service.create(this.<%= entityInstance %>));
         }
     }
 
-    private onSaveSuccess (result: <%= entityAngularName %>) {
+    private subscribeToSaveResponse(result: Observable<<%= entityAngularName %>>) {
+        result.subscribe((res: <%= entityAngularName %>) =>
+            this.onSaveSuccess(res), (res: Response) => this.onSaveError(res));
+    }
+
+    private onSaveSuccess(result: <%= entityAngularName %>) {
         this.eventManager.broadcast({ name: '<%= entityInstance %>ListModification', content: 'OK'});
         this.isSaving = false;
         this.activeModal.dismiss(result);
     }
 
-    private onSaveError (error) {
+    private onSaveError(error) {
+        try {
+            error.json();
+        } catch (exception) {
+            error.message = error.text();
+        }
         this.isSaving = false;
         this.onError(error);
     }
 
-    private onError (error) {
+    private onError(error) {
         this.alertService.error(error.message, null, null);
     }
     <%_
-    var entitiesSeen = [];
+    const entitiesSeen = [];
     for (idx in relationships) {
-        var otherEntityNameCapitalized = relationships[idx].otherEntityNameCapitalized;
-            if(entitiesSeen.indexOf(otherEntityNameCapitalized) == -1) {
+        const otherEntityNameCapitalized = relationships[idx].otherEntityNameCapitalized;
+        if(relationships[idx].relationshipType !== 'one-to-many' && entitiesSeen.indexOf(otherEntityNameCapitalized) === -1) {
     _%>
 
     track<%- otherEntityNameCapitalized -%>ById(index: number, item: <%- relationships[idx].otherEntityAngularName -%>) {
@@ -183,24 +202,22 @@ export class <%= entityAngularName %>DialogComponent implements OnInit {
 })
 export class <%= entityAngularName %>PopupComponent implements OnInit, OnDestroy {
 
-    modalRef: NgbModalRef;
     routeSub: any;
 
-    constructor (
+    constructor(
         private route: ActivatedRoute,
         private <%= entityInstance %>PopupService: <%= entityAngularName %>PopupService
     ) {}
 
     ngOnInit() {
-        this.routeSub = this.route.params.subscribe(params => {
+        this.routeSub = this.route.params.subscribe((params) => {
             if ( params['id'] ) {
-                this.modalRef = this.<%= entityInstance %>PopupService
-                    .open(<%= entityAngularName %>DialogComponent, params['id']);
+                this.<%= entityInstance %>PopupService
+                    .open(<%= entityAngularName %>DialogComponent as Component, params['id']);
             } else {
-                this.modalRef = this.<%= entityInstance %>PopupService
-                    .open(<%= entityAngularName %>DialogComponent);
+                this.<%= entityInstance %>PopupService
+                    .open(<%= entityAngularName %>DialogComponent as Component);
             }
-
         });
     }
 

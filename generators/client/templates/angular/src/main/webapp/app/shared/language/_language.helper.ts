@@ -1,14 +1,45 @@
-import { Injectable } from '@angular/core';
-import { Title }     from '@angular/platform-browser';
+<%#
+ Copyright 2013-2017 the original author or authors from the JHipster project.
+
+ This file is part of the JHipster project, see http://www.jhipster.tech/
+ for more information.
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+-%>
+import { Injectable, RendererFactory2, Renderer2 } from '@angular/core';
+import { Title } from '@angular/platform-browser';
 import { Router, ActivatedRouteSnapshot } from '@angular/router';
-import { TranslateService, TranslationChangeEvent, LangChangeEvent } from 'ng2-translate/ng2-translate';
+import { TranslateService, LangChangeEvent } from '@ngx-translate/core';
 
 import { LANGUAGES } from './language.constants';
+<%_ if (enableI18nRTL) { _%>
+import { FindLanguageFromKeyPipe } from './find-language-from-key.pipe';
+<%_ } _%>
 
 @Injectable()
 export class JhiLanguageHelper {
+    renderer: Renderer2 = null;
 
-    constructor (private translateService: TranslateService, private titleService: Title, private router: Router) {
+    constructor(
+        private translateService: TranslateService,
+        private rootRenderer: RendererFactory2,
+        <%_ if (enableI18nRTL) { _%>
+        private findLanguageFromKeyPipe: FindLanguageFromKeyPipe,
+        <%_ } _%>
+        private titleService: Title,
+        private router: Router
+    ) {
+        this.renderer = rootRenderer.createRenderer(document.querySelector('html'), null);
         this.init();
     }
 
@@ -28,18 +59,18 @@ export class JhiLanguageHelper {
              titleKey = this.getPageTitle(this.router.routerState.snapshot.root);
         }
 
-        this.translateService.get(titleKey).subscribe(title => {
+        this.translateService.get(titleKey).subscribe((title) => {
             this.titleService.setTitle(title);
         });
     }
 
-    private init () {
-        this.translateService.onTranslationChange.subscribe((event: TranslationChangeEvent) => {
-            this.updateTitle();
-        });
-
+    private init() {
         this.translateService.onLangChange.subscribe((event: LangChangeEvent) => {
+            this.renderer.setAttribute(document.querySelector('html'), 'lang', this.translateService.currentLang);
             this.updateTitle();
+            <%_ if (enableI18nRTL) { _%>
+            this.updatePageDirection();
+            <%_ } _%>
         });
     }
 
@@ -50,4 +81,10 @@ export class JhiLanguageHelper {
         }
         return title;
     }
+    <%_ if (enableI18nRTL) { _%>
+
+    private updatePageDirection() {
+        this.renderer.setAttribute(document.querySelector('html'), 'dir', this.findLanguageFromKeyPipe.isRTL(this.translateService.currentLang) ? 'rtl' : 'ltr');
+    }
+    <%_ }_%>
 }

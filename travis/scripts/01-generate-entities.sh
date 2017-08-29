@@ -6,14 +6,16 @@ set -e
 #-------------------------------------------------------------------------------
 moveEntity() {
     local entity="$1"
-    mv "$JHIPSTER_SAMPLES"/.jhipster/"$entity".json "$HOME"/app/.jhipster/
+    cp "$JHIPSTER_SAMPLES"/.jhipster/"$entity".json "$APP_FOLDER"/.jhipster/
 }
 
 #-------------------------------------------------------------------------------
 # Copy entities json
 #-------------------------------------------------------------------------------
-rm -Rf "$HOME"/app
-mkdir -p "$HOME"/app/.jhipster/
+
+rm -Rf "$APP_FOLDER"
+mkdir -p "$APP_FOLDER"/.jhipster/
+
 if [ "$JHIPSTER" == "app-ng2-mongodb" ]; then
     moveEntity MongoBankAccount
 
@@ -50,6 +52,8 @@ elif [[ ("$JHIPSTER" == "app-mysql") || ("$JHIPSTER" == "app-ng2-psql-es-noi18n"
     moveEntity BankAccount
     moveEntity Label
     moveEntity Operation
+    moveEntity Place
+    moveEntity Division
 
     moveEntity FieldTestEntity
     moveEntity FieldTestMapstructEntity
@@ -119,4 +123,4 @@ else
     moveEntity EntityWithServiceImplPaginationAndDTO
 fi
 
-ls -l "$HOME"/app/.jhipster/
+ls -l "$APP_FOLDER"/.jhipster/

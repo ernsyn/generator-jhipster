@@ -1,45 +1,86 @@
+<%#
+ Copyright 2013-2017 the original author or authors from the JHipster project.
+
+ This file is part of the JHipster project, see http://www.jhipster.tech/
+ for more information.
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+-%>
 package <%=packageName%>.repository;
-<% if (databaseType == 'cassandra') { %>
+
+<%_ if (databaseType === 'cassandra') { _%>
 import com.datastax.driver.core.*;
 import com.datastax.driver.mapping.Mapper;
-import com.datastax.driver.mapping.MappingManager;<% } %>
+import com.datastax.driver.mapping.MappingManager;
+<%_ } _%>
 import <%=packageName%>.domain.User;
-
-import java.time.ZonedDateTime;<% if (databaseType == 'sql' || databaseType == 'mongodb') { %>
+<%_ if (databaseType === 'sql' || databaseType === 'mongodb') { _%>
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;<% } %><% if (databaseType == 'sql') { %>
+import org.springframework.data.domain.Pageable;
+<%_ } _%>
+<%_ if (databaseType === 'sql') { _%>
 import org.springframework.data.jpa.repository.EntityGraph;
-import org.springframework.data.jpa.repository.JpaRepository;<% } %><% if (databaseType == 'mongodb') { %>
-import org.springframework.data.mongodb.repository.MongoRepository;<% } %>
-
-import java.util.List;
-import java.util.Optional;<% if (databaseType == 'cassandra') { %>
+import org.springframework.data.jpa.repository.JpaRepository;
+<%_ } _%>
+<%_ if (databaseType === 'mongodb') { _%>
+import org.springframework.data.mongodb.repository.MongoRepository;
+<%_ } _%>
 import org.springframework.stereotype.Repository;
+<%_ if (databaseType === 'cassandra') { _%>
 import org.springframework.util.StringUtils;
 
-import java.util.ArrayList;
+import javax.validation.ConstraintViolation;
+import javax.validation.ConstraintViolationException;
+import javax.validation.Validator;
+<%_ } _%>
 import java.util.List;
-import java.util.Optional;<%}%>
+import java.util.Optional;
+<%_ if (databaseType === 'cassandra') { _%>
+import java.util.Set;
+<%_ } _%>
+<%_ if (databaseType !== 'cassandra') { _%>
+import java.time.Instant;
+<%_ } _%>
 
-<% if (databaseType == 'sql') { %>/**
+<%_ if (databaseType === 'sql') { _%>
+/**
  * Spring Data JPA repository for the User entity.
- */<% } %><% if (databaseType == 'mongodb') { %>/**
+ */
+<%_ } _%>
+<%_ if (databaseType === 'mongodb') { _%>
+/**
  * Spring Data MongoDB repository for the User entity.
- */<% } %><% if (databaseType == 'cassandra') { %>/**
+ */
+<%_ } _%>
+<%_ if (databaseType === 'cassandra') { _%>
+/**
  * Cassandra repository for the User entity.
- */<% } %><% if (databaseType == 'sql' || databaseType == 'mongodb') { %>
-public interface UserRepository extends <% if (databaseType == 'sql') { %>JpaRepository<User, Long><% } %><% if (databaseType == 'mongodb') { %>MongoRepository<User, String><% } %> {
+ */
+<%_ } _%>
+<%_ if (databaseType === 'sql' || databaseType === 'mongodb') { _%>
+@Repository
+public interface UserRepository extends <% if (databaseType === 'sql') { %>JpaRepository<User, Long><% } %><% if (databaseType === 'mongodb') { %>MongoRepository<User, String><% } %> {
 
     Optional<User> findOneByActivationKey(String activationKey);
 
-    List<User> findAllByActivatedIsFalseAndCreatedDateBefore(ZonedDateTime dateTime);
+    List<User> findAllByActivatedIsFalseAndCreatedDateBefore(Instant dateTime);
 
     Optional<User> findOneByResetKey(String resetKey);
 
     Optional<User> findOneByEmail(String email);
 
     Optional<User> findOneByLogin(String login);
-    <%_ if (databaseType == 'sql') { _%>
+    <%_ if (databaseType === 'sql') { _%>
 
     @EntityGraph(attributePaths = "authorities")
     User findOneWithAuthoritiesById(<%= pkType %> id);
@@ -49,11 +90,14 @@ public interface UserRepository extends <% if (databaseType == 'sql') { %>JpaRep
     <%_ } _%>
 
     Page<User> findAllByLoginNot(Pageable pageable, String login);
-}<% } else if (databaseType == 'cassandra') { %>
+}
+<%_ } else if (databaseType === 'cassandra') { _%>
 @Repository
 public class UserRepository {
 
     private final Session session;
+
+    private final Validator validator;
 
     private Mapper<User> mapper;
 
@@ -83,42 +127,51 @@ public class UserRepository {
 
     private PreparedStatement deleteByEmailStmt;
 
-    public UserRepository(Session session) {
+    private PreparedStatement truncateStmt;
+
+    private PreparedStatement truncateByResetKeyStmt;
+
+    private PreparedStatement truncateByLoginStmt;
+
+    private PreparedStatement truncateByEmailStmt;
+
+    public UserRepository(Session session, Validator validator) {
         this.session = session;
+        this.validator = validator;
         mapper = new MappingManager(session).mapper(User.class);
 
         findAllStmt = session.prepare("SELECT * FROM user");
 
         findOneByActivationKeyStmt = session.prepare(
             "SELECT id " +
-            "FROM user_by_activation_key " +
-            "WHERE activation_key = :activation_key");
+                "FROM user_by_activation_key " +
+                "WHERE activation_key = :activation_key");
 
         findOneByResetKeyStmt = session.prepare(
             "SELECT id " +
-            "FROM user_by_reset_key " +
-            "WHERE reset_key = :reset_key");
+                "FROM user_by_reset_key " +
+                "WHERE reset_key = :reset_key");
 
         insertByActivationKeyStmt = session.prepare(
             "INSERT INTO user_by_activation_key (activation_key, id) " +
-            "VALUES (:activation_key, :id)");
+                "VALUES (:activation_key, :id)");
 
         insertByResetKeyStmt = session.prepare(
             "INSERT INTO user_by_reset_key (reset_key, id) " +
-            "VALUES (:reset_key, :id)");
+                "VALUES (:reset_key, :id)");
 
         deleteByActivationKeyStmt = session.prepare(
             "DELETE FROM user_by_activation_key " +
-            "WHERE activation_key = :activation_key");
+                "WHERE activation_key = :activation_key");
 
         deleteByResetKeyStmt = session.prepare(
             "DELETE FROM user_by_reset_key " +
-            "WHERE reset_key = :reset_key");
+                "WHERE reset_key = :reset_key");
 
         findOneByLoginStmt = session.prepare(
             "SELECT id " +
-            "FROM user_by_login " +
-            "WHERE login = :login");
+                "FROM user_by_login " +
+                "WHERE login = :login");
 
         insertByLoginStmt = session.prepare(
             "INSERT INTO user_by_login (login, id) " +
@@ -130,8 +183,8 @@ public class UserRepository {
 
         findOneByEmailStmt = session.prepare(
             "SELECT id " +
-            "FROM user_by_email " +
-            "WHERE email     = :email");
+                "FROM user_by_email " +
+                "WHERE email     = :email");
 
         insertByEmailStmt = session.prepare(
             "INSERT INTO user_by_email (email, id) " +
@@ -140,6 +193,14 @@ public class UserRepository {
         deleteByEmailStmt = session.prepare(
             "DELETE FROM user_by_email " +
                 "WHERE email = :email");
+
+        truncateStmt = session.prepare("TRUNCATE user");
+
+        truncateByResetKeyStmt = session.prepare("TRUNCATE user_by_reset_key");
+
+        truncateByLoginStmt = session.prepare("TRUNCATE user_by_login");
+
+        truncateByEmailStmt = session.prepare("TRUNCATE user_by_email");
     }
 
     public User findOne(String id) {
@@ -175,6 +236,10 @@ public class UserRepository {
     }
 
     public User save(User user) {
+        Set<ConstraintViolation<User>> violations = validator.validate(user);
+        if (violations != null && !violations.isEmpty()) {
+            throw new ConstraintViolationException(violations);
+        }
         User oldUser = mapper.get(user.getId());
         if (oldUser != null) {
             if (!StringUtils.isEmpty(oldUser.getActivationKey()) && !oldUser.getActivationKey().equals(user.getActivationKey())) {
@@ -198,9 +263,9 @@ public class UserRepository {
                 .setString("id", user.getId()));
         }
         if (!StringUtils.isEmpty(user.getResetKey())) {
-          batch.add(insertByResetKeyStmt.bind()
-              .setString("reset_key", user.getResetKey())
-              .setString("id", user.getId()));
+            batch.add(insertByResetKeyStmt.bind()
+                .setString("reset_key", user.getResetKey())
+                .setString("id", user.getId()));
         }
         batch.add(insertByLoginStmt.bind()
             .setString("login", user.getLogin())
@@ -235,4 +300,19 @@ public class UserRepository {
             .map(id -> Optional.ofNullable(mapper.get(id)))
             .get();
     }
-}<% } %>
+
+    public void deleteAll() {
+        BoundStatement truncate = truncateStmt.bind();
+        session.execute(truncate);
+
+        BoundStatement truncateByEmail = truncateByEmailStmt.bind();
+        session.execute(truncateByEmail);
+
+        BoundStatement truncateByLogin = truncateByLoginStmt.bind();
+        session.execute(truncateByLogin);
+
+        BoundStatement truncateByResetKey = truncateByResetKeyStmt.bind();
+        session.execute(truncateByResetKey);
+    }
+}
+<%_ } _%>

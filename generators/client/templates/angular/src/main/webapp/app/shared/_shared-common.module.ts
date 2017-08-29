@@ -1,13 +1,29 @@
-import { NgModule, Sanitizer } from '@angular/core';
+<%#
+ Copyright 2013-2017 the original author or authors from the JHipster project.
+
+ This file is part of the JHipster project, see http://www.jhipster.tech/
+ for more information.
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+-%>
+import { NgModule, LOCALE_ID } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 
-<%_ if (enableTranslation) { _%>
-import { TranslateService } from 'ng2-translate';
+<%_ if (websocket === 'spring-websocket') { _%>
+import { WindowRef } from './tracker/window.service';
 <%_ } _%>
-import { AlertService } from 'ng-jhipster';
-
 import {
-    <%=angular2AppName%>SharedLibsModule,
+    <%=angularXAppName%>SharedLibsModule,
     <%_ if (enableTranslation) { _%>
     JhiLanguageHelper,
     FindLanguageFromKeyPipe,
@@ -16,16 +32,9 @@ import {
     <%=jhiPrefixCapitalized%>AlertErrorComponent
 } from './';
 
-
-export function alertServiceProvider(sanitizer: Sanitizer<% if (enableTranslation) { %>, translateService: TranslateService<% } %>) {
-    // set below to true to make alerts look like toast
-    let isToast = false;
-    return new AlertService(sanitizer, isToast<% if (enableTranslation) { %>, translateService<% } %>);
-}
-
 @NgModule({
     imports: [
-        <%=angular2AppName%>SharedLibsModule
+        <%=angularXAppName%>SharedLibsModule
     ],
     declarations: [
         <%_ if (enableTranslation) { _%>
@@ -35,18 +44,25 @@ export function alertServiceProvider(sanitizer: Sanitizer<% if (enableTranslatio
         <%=jhiPrefixCapitalized%>AlertErrorComponent
     ],
     providers: [
-        <%_ if (enableTranslation) { _%>
+        <%_ if (enableI18nRTL) { _%>
+        FindLanguageFromKeyPipe,
+        <%_ } if (enableTranslation) { _%>
         JhiLanguageHelper,
+        <%_ } if (websocket === 'spring-websocket') { _%>
+        WindowRef,
         <%_ } _%>
+        Title,
         {
-            provide: AlertService,
-            useFactory: alertServiceProvider,
-            deps: [Sanitizer<% if (enableTranslation) { %>, TranslateService<% } %>]
+            provide: LOCALE_ID,
+        <%_ if (skipLanguageForLocale(nativeLanguage)) { _%>
+            useValue: 'en'
+        <%_ } else { _%>
+            useValue: '<%= nativeLanguage %>'
+        <%_ } _%>
         },
-        Title
     ],
     exports: [
-        <%=angular2AppName%>SharedLibsModule,
+        <%=angularXAppName%>SharedLibsModule,
         <%_ if (enableTranslation) { _%>
         FindLanguageFromKeyPipe,
         <%_ } _%>
@@ -54,4 +70,4 @@ export function alertServiceProvider(sanitizer: Sanitizer<% if (enableTranslatio
         <%=jhiPrefixCapitalized%>AlertErrorComponent
     ]
 })
-export class <%=angular2AppName%>SharedCommonModule {}
+export class <%=angularXAppName%>SharedCommonModule {}

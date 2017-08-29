@@ -1,3 +1,21 @@
+<%#
+ Copyright 2013-2017 the original author or authors from the JHipster project.
+
+ This file is part of the JHipster project, see http://www.jhipster.tech/
+ for more information.
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+-%>
 body {
     background: #fafafa;
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
@@ -52,7 +70,14 @@ Version number in navbar
 ========================================================================== */
 .navbar-version {
     font-size: 10px;
-    color: #ccc
+    color: #444;
+}
+
+/* ==========================================================================
+navbar text
+========================================================================== */
+.navbar-default .navbar-brand {
+    color: #444;
 }
 
 /* ==========================================================================
@@ -155,6 +180,10 @@ Generic styles
 /* ==========================================================================
 make sure browsers use the pointer cursor for anchors, even with no href
 ========================================================================== */
+a {
+    color: #1c0cf5;
+}
+
 a:hover, .hand, [jh-sort-by] {
     cursor: pointer;
 }
@@ -292,16 +321,16 @@ entity tables helpers
 /* ==========================================================================
 entity detail page css
 ========================================================================== */
-.row.jh-entity-details > dd {
+.dl-horizontal.jh-entity-details > dd {
     margin-bottom: 15px;
 }
 
 @media screen and (min-width: 768px) {
-    .row.jh-entity-details > dt {
+    .dl-horizontal.jh-entity-details > dt {
         margin-bottom: 15px;
     }
 
-    .row.jh-entity-details > dd {
+    .dl-horizontal.jh-entity-details > dd {
         border-bottom: 1px solid #eee;
         padding-left: 180px;
         margin-left: 0;
@@ -368,6 +397,38 @@ Social Buttons
     background-color: #2795e9;
     border-color: rgba(0, 0, 0, 0.2);
     color: #fff;
+}
+<%_ } _%>
+
+<%_ if (enableI18nRTL) { _%>
+/* ==========================================================================
+Right-to-Left support
+========================================================================== */
+html[dir=rtl] .col-xs-1, html[dir=rtl] .col-xs-2, html[dir=rtl] .col-xs-3, html[dir=rtl] .col-xs-4, html[dir=rtl] .col-xs-5, html[dir=rtl] .col-xs-6, html[dir=rtl] .col-xs-7, html[dir=rtl] .col-xs-8, html[dir=rtl] .col-xs-9, html[dir=rtl] .col-xs-10, html[dir=rtl] .col-xs-11, html[dir=rtl] .col-xs-12,
+html[dir=rtl] .col-sm-1, html[dir=rtl] .col-sm-2, html[dir=rtl] .col-sm-3, html[dir=rtl] .col-sm-4, html[dir=rtl] .col-sm-5, html[dir=rtl] .col-sm-6, html[dir=rtl] .col-sm-7, html[dir=rtl] .col-sm-8, html[dir=rtl] .col-sm-9, html[dir=rtl] .col-sm-10, html[dir=rtl] .col-sm-11, html[dir=rtl] .col-sm-12,
+html[dir=rtl] .col-md-1, html[dir=rtl] .col-md-2, html[dir=rtl] .col-md-3, html[dir=rtl] .col-md-4, html[dir=rtl] .col-md-5, html[dir=rtl] .col-md-6, html[dir=rtl] .col-md-7, html[dir=rtl] .col-md-8, html[dir=rtl] .col-md-9, html[dir=rtl] .col-md-10, html[dir=rtl] .col-md-11, html[dir=rtl] .col-md-12,
+html[dir=rtl] .col-lg-1, html[dir=rtl] .col-lg-2, html[dir=rtl] .col-lg-3, html[dir=rtl] .col-lg-4, html[dir=rtl] .col-lg-5, html[dir=rtl] .col-lg-6, html[dir=rtl] .col-lg-7, html[dir=rtl] .col-lg-8, html[dir=rtl] .col-lg-9, html[dir=rtl] .col-lg-10, html[dir=rtl] .col-lg-11, html[dir=rtl] .col-lg-12 {
+    float: right;
+}
+
+html[dir=rtl] .navbar-nav > li {
+    float: right;
+}
+
+html[dir=rtl] .dl-horizontal dt {
+    float:right;
+}
+
+html[dir=rtl] th {
+    text-align: right;
+}
+
+html[dir=rtl] .dropdown-menu {
+    text-align: right;
+}
+
+html[dir=rtl] .modal-footer {
+    text-align: left;
 }
 <%_ } _%>
 

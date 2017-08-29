@@ -1,3 +1,21 @@
+<%#
+ Copyright 2013-2017 the original author or authors from the JHipster project.
+
+ This file is part of the JHipster project, see http://www.jhipster.tech/
+ for more information.
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+-%>
 {
     "global": {
         "title": "<%= capitalizedBaseName %>",
@@ -20,7 +38,7 @@
             },
             "admin": {
                 "main": "Administracija",
-                <%_ if (applicationType == 'gateway') { _%>
+                <%_ if (applicationType === 'gateway') { _%>
                 "gateway": "Gateway",
                 <%_ } _%>
                 "userManagement": "Korisnički manadžment",
@@ -43,15 +61,15 @@
             "newpassword.placeholder": "Vaša nova lozinka",
             "confirmpassword": "Potvrdite lozinku",
             "confirmpassword.placeholder": "Potvrdite vašu lozinku",
-            "email": "E-mail",
-            "email.placeholder": "Vaš e-mail"
+            "email": "Email",
+            "email.placeholder": "Vaš email"
         },
         "messages": {
             "info": {
                 <%_ if (clientFramework === 'angular1') { _%>
                 "authenticated": "Ako želite da se <a class=\"alert-link\" href=\"\" ng-click=\"vm.login()\">prijavite</a>, možete probati sa univerzanlnim korisničkim nalozima:<br/>- Administrator (korisničko ime=\"admin\" i lozinka=\"admin\") <br/>- User (korisničko ime=\"user\" i lozinka=\"user\").",
                 "register": "Još uvek nemate profil? <a class=\"alert-link\" href=\"\" ng-click=\"vm.register()\">Registrujte svoj profil</a>"
-                <%_ } else if (clientFramework === 'angular2') { _%>
+                <%_ } else { _%>
                 "authenticated": {
                     "prefix": "Ako želite da se ",
                     "link": "prijavite",
@@ -79,10 +97,10 @@
                     "maxlength": "Potvrda lozinke ne može biti duža od 50 karaktera."
                 },
                 "email": {
-                    "required": "Vaš e-mail je obavezan.",
-                    "invalid": "Vaš e-mail is neispravan.",
-                    "minlength": "Vaš e-mail mora imati najmanje 5 karaktera.",
-                    "maxlength": "Vaš e-mail ne može biti duži od 50 karaktera."
+                    "required": "Vaš email je obavezan.",
+                    "invalid": "Vaš email is neispravan.",
+                    "minlength": "Vaš email mora imati najmanje 5 karaktera.",
+                    "maxlength": "Vaš email ne može biti duži od 50 karaktera."
                 }
             }
         },
@@ -91,7 +109,8 @@
         },
         "ribbon": {
             "dev":"Razvojno okruženje"
-        }
+        },
+        "item-count": "Showing {{first}} - {{second}} of {{total}} items."
     },
     "entity": {
         "action": {
@@ -132,7 +151,7 @@
         "NotNull": "Polje {{ fieldName }} ne može biti prazno!",
         "Size": "Polje {{ fieldName }} ne zadovoljava minimalna i maksimalna ograničenja!",
         "userexists": "Korisiničko ime već postoji!",
-        "emailexists": "E-mail je već upotrebljen!",
+        "emailexists": "Email je već upotrebljen!",
         "idexists": "Novi {{ entityName }} ne može sadržati ID"
     },
     "footer": "Ovo je vaše podnožje"

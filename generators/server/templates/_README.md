@@ -1,3 +1,21 @@
+<%#
+ Copyright 2013-2017 the original author or authors from the JHipster project.
+
+ This file is part of the JHipster project, see http://www.jhipster.tech/
+ for more information.
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+-%>
 # <%= baseName %>
 <%_
 let clientPackageMngrName = 'Npm';
@@ -27,7 +45,7 @@ This application is configured for Service Discovery and Configuration with <% i
 <%_ if(skipClient) { _%>
 To start your application in the dev profile, simply run:
 
-    <% if (buildTool == 'maven') { %>./mvnw<% } %><% if (buildTool == 'gradle'){ %>./gradlew<% } %>
+    <% if (buildTool === 'maven') { %>./mvnw<% } %><% if (buildTool === 'gradle'){ %>./gradlew<% } %>
 
 <%_ } _%>
 <%_ if(!skipClient) { _%>
@@ -45,7 +63,7 @@ You will only need to run this command when dependencies change in [package.json
 
     <%= clientPackageManager %> install
 
-<%_ if (clientFramework === 'angular2') { _%>
+<%_ if (clientFramework !== 'angular1') { _%>
 We use <%= clientPackageManager %> scripts and [Webpack][] as our build system.
 
 <%_ } else { _%>
@@ -56,10 +74,10 @@ We use [Gulp][] as our build system. Install the Gulp command-line tool globally
 
 Run the following commands in two separate terminals to create a blissful development experience where your browser
 auto-refreshes when files change on your hard drive.
-<% if (buildTool == 'maven') { %>
-    ./mvnw<% } %><% if (buildTool == 'gradle') { %>
+<% if (buildTool === 'maven') { %>
+    ./mvnw<% } %><% if (buildTool === 'gradle') { %>
     ./gradlew<% } %>
-<%_ if (clientFramework === 'angular2') { _%>
+<%_ if (clientFramework !== 'angular1') { _%>
     <%= clientPackageManager %> start
 
 [<%= clientPackageMngrName %>][] is also used to manage CSS and JavaScript dependencies used in this application. You can upgrade dependencies by
@@ -67,6 +85,33 @@ specifying a newer version in [package.json](package.json). You can also run `<%
 Add the `help` flag on any command to see how you can use it. For example, `<%= clientPackageManager %> help update`.
 
 The `<%= clientPackageManager %> run` command will list all of the scripts available to run for this project.
+
+### Service workers
+
+Service workers are commented by default, to enable them please uncomment the following code.
+
+* The service worker registering script in index.html
+```
+<script>
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker
+        .register('./sw.js')
+        .then(function() { console.log('Service Worker Registered'); });
+    }
+</script>
+```
+<%_ if (clientFramework !== 'angular1') { _%>
+* The copy file option in webpack-common.js
+```js
+{ from: './src/main/webapp/sw.js', to: 'sw.js' },
+```
+<%_ } else { _%>
+* The copy file option in gulp/copy.js
+```js
+config.app + 'sw.js',
+```
+<%_ } _%>
+Note: Add the respective scripts/assets in `sw.js` that is needed to be cached.
 
 ### Managing dependencies
 
@@ -102,7 +147,7 @@ Add the `-h` flag on any command to see how you can use it. For example, `bower 
 
 For further instructions on how to develop with JHipster, have a look at [Using JHipster in development][].
 
-<%_ if (clientFramework === 'angular2') { _%>
+<%_ if (clientFramework !== 'angular1') { _%>
 ### Using angular-cli
 
 You can also use [Angular CLI][] to generate some custom client code.
@@ -121,16 +166,16 @@ will generate few files:
 ## Building for production
 
 To optimize the <%= baseName %> application for production, run:
-<% if (buildTool == 'maven') { %>
-    ./mvnw -Pprod clean package<% } %><% if (buildTool == 'gradle') { %>
+<% if (buildTool === 'maven') { %>
+    ./mvnw -Pprod clean package<% } %><% if (buildTool === 'gradle') { %>
     ./gradlew -Pprod clean bootRepackage<% } %>
 
 <%_ if(!skipClient) { _%>
 This will concatenate and minify the client CSS and JavaScript files. It will also modify `index.html` so it references these new files.
 <%_ } _%>
 To ensure everything worked, run:
-<% if (buildTool == 'maven') { %>
-    java -jar target/*.war<% } %><% if (buildTool == 'gradle') { %>
+<% if (buildTool === 'maven') { %>
+    java -jar target/*.war<% } %><% if (buildTool === 'gradle') { %>
     java -jar build/libs/*.war<% } %>
 
 <% if(!skipClient) { %>Then navigate to [http://localhost:<%= serverPort %>](http://localhost:<%= serverPort %>) in your browser.
@@ -141,25 +186,25 @@ Refer to [Using JHipster in production][] for more details.
 
 To launch your application's tests, run:
 
-    <% if (buildTool == 'maven') { %>./mvnw clean test<% } else { %>./gradlew test<% } %>
+    <% if (buildTool === 'maven') { %>./mvnw clean test<% } else { %>./gradlew test<% } %>
 <% if(!skipClient) { %>
 ### Client tests
 
 Unit tests are run by [Karma][] and written with [Jasmine][]. They're located in [<%= CLIENT_TEST_SRC_DIR %>](<%= CLIENT_TEST_SRC_DIR %>) and can be run with:
 
-<%_ if (clientFramework === 'angular2') { _%>
+<%_ if (clientFramework !== 'angular1') { _%>
     <%= clientPackageManager %> test
 <%_ } else { _%>
     gulp test
 <%_ } _%>
 
 <% if (protractorTests) { %>UI end-to-end tests are powered by [Protractor][], which is built on top of WebDriverJS. They're located in [<%= CLIENT_TEST_SRC_DIR %>e2e](<%= CLIENT_TEST_SRC_DIR %>e2e)
-and can be run by starting Spring Boot in one terminal (`<% if (buildTool == 'maven') { %>./mvnw spring-boot:run<% } else { %>./gradlew bootRun<% } %>`) and running the tests (`gulp itest`) in a second one.<% } %>
+and can be run by starting Spring Boot in one terminal (`<% if (buildTool === 'maven') { %>./mvnw spring-boot:run<% } else { %>./gradlew bootRun<% } %>`) and running the tests (`<% if (clientFramework !== 'angular1') { %><%= clientPackageManager %> run e2e<% } else { %>gulp itest<% } %>`) in a second one.<% } %>
 <% } %><% if (gatlingTests) { %>### Other tests
 
 Performance tests are run by [Gatling][] and written in Scala. They're located in [src/test/gatling](src/test/gatling) and can be run with:
 
-    <% if (buildTool == 'maven') { %>./mvnw gatling:execute<% } else { %>./gradlew gatlingRun<% } %>
+    <% if (buildTool === 'maven') { %>./mvnw gatling:execute<% } else { %>./gradlew gatlingRun<% } %>
 <% } %>
 For more information, refer to the [Running tests page][].
 
@@ -177,27 +222,27 @@ To stop it and remove the container, run:
 You can also fully dockerize your application and all the services that it depends on.
 To achieve this, first build a docker image of your app by running:
 
-    <% if (buildTool == 'maven') { %>./mvnw package -Pprod docker:build<% } %><% if (buildTool == 'gradle') { %>./gradlew bootRepackage -Pprod buildDocker<% } %>
+    <% if (buildTool === 'maven') { %>./mvnw package -Pprod docker:build<% } %><% if (buildTool === 'gradle') { %>./gradlew bootRepackage -Pprod buildDocker<% } %>
 
 Then run:
 
     docker-compose -f src/main/docker/app.yml up -d
 
-For more information refer to [Using Docker and Docker-Compose][], this page also contains information on the docker-compose sub-generator (`yo jhipster:docker-compose`), which is able to generate docker configurations for one or several JHipster applications.
+For more information refer to [Using Docker and Docker-Compose][], this page also contains information on the docker-compose sub-generator (`jhipster docker-compose`), which is able to generate docker configurations for one or several JHipster applications.
 
 ## Continuous Integration (optional)
 
-To configure CI for your project, run the ci-cd sub-generator (`yo jhipster:ci-cd`), this will let you generate configuration files for a number of Continuous Integration systems. Consult the [Setting up Continuous Integration][] page for more information.
+To configure CI for your project, run the ci-cd sub-generator (`jhipster ci-cd`), this will let you generate configuration files for a number of Continuous Integration systems. Consult the [Setting up Continuous Integration][] page for more information.
 
 [JHipster Homepage and latest documentation]: <%= DOCUMENTATION_URL %>
 [JHipster <%= jhipsterVersion %> archive]: <%= DOCUMENTATION_ARCHIVE_URL %>
-<% if (applicationType == 'gateway' || applicationType == 'microservice' || applicationType == 'uaa') { %>[Doing microservices with JHipster]: <%= DOCUMENTATION_ARCHIVE_URL %>/microservices-architecture/<% } %>
-<%_ if (applicationType == 'uaa') { _%>[Using UAA for Microservice Security]: <%= DOCUMENTATION_ARCHIVE_URL %>/using-uaa/<%_ } _%>
+<% if (applicationType === 'gateway' || applicationType === 'microservice' || applicationType === 'uaa') { %>[Doing microservices with JHipster]: <%= DOCUMENTATION_ARCHIVE_URL %>/microservices-architecture/<% } %>
+<%_ if (applicationType === 'uaa') { _%>[Using UAA for Microservice Security]: <%= DOCUMENTATION_ARCHIVE_URL %>/using-uaa/<%_ } _%>
 [Using JHipster in development]: <%= DOCUMENTATION_ARCHIVE_URL %>/development/
-<%_ if (serviceDiscoveryType == 'eureka') { _%>
+<%_ if (serviceDiscoveryType === 'eureka') { _%>
 [Service Discovery and Configuration with the JHipster-Registry]: <%= DOCUMENTATION_ARCHIVE_URL %>/microservices-architecture/#jhipster-registry
 <%_ } _%>
-<%_ if (serviceDiscoveryType == 'consul') { _%>
+<%_ if (serviceDiscoveryType === 'consul') { _%>
 [Service Discovery and Configuration with Consul]: <%= DOCUMENTATION_ARCHIVE_URL %>/microservices-architecture/#consul
 <%_ } _%>
 [Using Docker and Docker-Compose]: <%= DOCUMENTATION_ARCHIVE_URL %>/docker-compose
@@ -209,7 +254,7 @@ To configure CI for your project, run the ci-cd sub-generator (`yo jhipster:ci-c
 <%_ if(!skipClient) {_%>
 [Node.js]: https://nodejs.org/
 [Yarn]: https://yarnpkg.org/
-<%_ if (clientFramework === 'angular2') { _%>
+<%_ if (clientFramework !== 'angular1') { _%>
 [Webpack]: https://webpack.github.io/
 [Angular CLI]: https://cli.angular.io/
 <%_ } else { _%>

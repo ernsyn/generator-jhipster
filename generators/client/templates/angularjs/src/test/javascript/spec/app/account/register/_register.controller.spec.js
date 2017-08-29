@@ -1,3 +1,21 @@
+<%#
+ Copyright 2013-2017 the original author or authors from the JHipster project.
+
+ This file is part of the JHipster project, see http://www.jhipster.tech/
+ for more information.
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+-%>
 'use strict';
 
 describe('Controller Tests', function() {
@@ -77,11 +95,11 @@ describe('Controller Tests', function() {
             expect($scope.vm.error).toBeNull();
         });
 
-        it('should notify of email existence upon 400/e-mail address already in use', function() {
+        it('should notify of email existence upon 400/email address already in use', function() {
             // given
             MockAuth.createAccount.and.returnValue($q.reject({
                 status: 400,
-                data: 'e-mail address already in use'
+                data: 'email address already in use'
             }));
             createController();
             $scope.vm.registerAccount.password = $scope.vm.confirmPassword = 'password';

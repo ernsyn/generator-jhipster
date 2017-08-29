@@ -1,11 +1,28 @@
-'use strict';
-
+/**
+ * Copyright 2013-2017 the original author or authors from the JHipster project.
+ *
+ * This file is part of the JHipster project, see http://www.jhipster.tech/
+ * for more information.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 const mkdirp = require('mkdirp');
+const constants = require('../generator-constants');
+
 /* Constants use throughout */
-const constants = require('../generator-constants'),
-    MAIN_SRC_DIR = constants.CLIENT_MAIN_SRC_DIR,
-    TEST_SRC_DIR = constants.CLIENT_TEST_SRC_DIR,
-    ANGULAR_DIR = constants.ANGULAR_DIR;
+const MAIN_SRC_DIR = constants.CLIENT_MAIN_SRC_DIR;
+const TEST_SRC_DIR = constants.CLIENT_TEST_SRC_DIR;
+const ANGULAR_DIR = constants.ANGULAR_DIR;
 
 /**
  * The default is to use a file path string. It implies use of the template method.
@@ -37,7 +54,7 @@ const files = {
             path: MAIN_SRC_DIR,
             templates: [
                 'content/css/_main.css',
-                { file: 'content/css/_documentation.css', method: 'copy' }
+                'content/css/_documentation.css'
             ]
         }
     ],
@@ -75,9 +92,11 @@ const files = {
             path: MAIN_SRC_DIR,
             templates: [
                 { file: '_favicon.ico', method: 'copy' },
-                { file: '_robots.txt', method: 'copy' },
-                { file: '_404.html', method: 'copy' },
-                { file: '_index.html', method: 'copy' }
+                '_robots.txt',
+                '_404.html',
+                '_index.html',
+                '_manifest.webapp',
+                '_sw.js'
             ]
         }
     ],
@@ -206,10 +225,6 @@ const files = {
             path: ANGULAR_DIR,
             templates: [
                 'admin/_admin.state.js',
-                'admin/audits/_audits.controller.js',
-                'admin/audits/_audits.service.js',
-                { file: 'admin/audits/_audits.state.js', method: 'processJs' },
-                { file: 'admin/audits/_audits.html', method: 'processHtml' },
                 'admin/configuration/_configuration.controller.js',
                 'admin/configuration/_configuration.service.js',
                 { file: 'admin/configuration/_configuration.state.js', method: 'processJs' },
@@ -230,8 +245,18 @@ const files = {
                 { file: 'admin/metrics/_metrics.state.js', method: 'processJs' },
                 { file: 'admin/metrics/_metrics.html', method: 'processHtml', template: true },
                 { file: 'admin/metrics/_metrics.modal.html', method: 'processHtml', template: true },
-                { file: 'admin/docs/_docs.html', method: 'copy' },
+                'admin/docs/_docs.html',
                 { file: 'admin/docs/_docs.state.js', method: 'processJs' }
+            ]
+        },
+        {
+            condition: generator => generator.devDatabaseType !== 'cassandra',
+            path: ANGULAR_DIR,
+            templates: [
+                'admin/audits/_audits.controller.js',
+                'admin/audits/_audits.service.js',
+                { file: 'admin/audits/_audits.state.js', method: 'processJs' },
+                { file: 'admin/audits/_audits.html', method: 'processHtml' },
             ]
         },
         {
@@ -292,7 +317,7 @@ const files = {
                 'components/util/_sort.directive.js',
                 'components/util/_sort-by.directive.js',
                 'components/util/_jhi-item-count.directive.js',
-                //alert service code
+                // alert service code
                 'components/alert/_alert.service.js',
                 'components/alert/_alert.directive.js',
                 'components/alert/_alert-error.directive.js'
@@ -395,7 +420,7 @@ module.exports = {
 
 function writeFiles() {
     mkdirp(MAIN_SRC_DIR);
-    this.fs.copy(this.templatePath('angularjs/gulp/_handle-errors.js'), this.destinationPath('gulp/handle-errors.js')); // to avoid interpolate errors
+    this.copy('angularjs/gulp/_handle-errors.js', 'gulp/handle-errors.js'); // to avoid interpolate errors
     // write angular 1.x files
     this.writeFilesToDisk(files, this, false, 'angularjs');
 }

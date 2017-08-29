@@ -1,3 +1,21 @@
+<%#
+ Copyright 2013-2017 the original author or authors from the JHipster project.
+
+ This file is part of the JHipster project, see http://www.jhipster.tech/
+ for more information.
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+-%>
 package <%=packageName%>;
 
 <%_ if (applicationType === 'microservice' && authenticationType === 'uaa') { _%>
@@ -43,8 +61,8 @@ import java.util.Collection;
 <%_ } else { _%>
 @ComponentScan
 <%_ } _%>
-@EnableAutoConfiguration(exclude = {MetricFilterAutoConfiguration.class, MetricRepositoryAutoConfiguration.class<% if (clusteredHttpSession == 'hazelcast') { %>, HazelcastAutoConfiguration.class<% } %><% if (applicationType == 'gateway') { %>, MetricsDropwizardAutoConfiguration.class<% } %>})
-@EnableConfigurationProperties({<% if (databaseType == 'sql') { %>LiquibaseProperties.class, <% } %>ApplicationProperties.class})
+@EnableAutoConfiguration(exclude = {MetricFilterAutoConfiguration.class, MetricRepositoryAutoConfiguration.class<% if (clusteredHttpSession === 'hazelcast') { %>, HazelcastAutoConfiguration.class<% } %><% if (applicationType === 'gateway') { %>, MetricsDropwizardAutoConfiguration.class<% } %>})
+@EnableConfigurationProperties({<% if (databaseType === 'sql') { %>LiquibaseProperties.class, <% } %>ApplicationProperties.class})
 <%_ if (serviceDiscoveryType) { _%>
 @EnableDiscoveryClient
 <%_ } _%>
@@ -66,7 +84,7 @@ public class <%= mainClass %> {
      * <p>
      * Spring profiles can be configured with a program arguments --spring.profiles.active=your-active-profile
      * <p>
-     * You can find more information on how profiles work with JHipster on <a href="http://jhipster.github.io/profiles/">http://jhipster.github.io/profiles/</a>.
+     * You can find more information on how profiles work with JHipster on <a href="http://www.jhipster.tech/profiles/">http://www.jhipster.tech/profiles/</a>.
      */
     @PostConstruct
     public void initApplication() {
@@ -76,7 +94,7 @@ public class <%= mainClass %> {
                 "with both the 'dev' and 'prod' profiles at the same time.");
         }
         if (activeProfiles.contains(JHipsterConstants.SPRING_PROFILE_DEVELOPMENT) && activeProfiles.contains(JHipsterConstants.SPRING_PROFILE_CLOUD)) {
-            log.error("You have misconfigured your application! It should not" +
+            log.error("You have misconfigured your application! It should not " +
                 "run with both the 'dev' and 'cloud' profiles at the same time.");
         }
     }
@@ -107,7 +125,7 @@ public class <%= mainClass %> {
             InetAddress.getLocalHost().getHostAddress(),
             env.getProperty("server.port"),
             env.getActiveProfiles());
-        <%_ if (serviceDiscoveryType && (applicationType == 'microservice' || applicationType == 'gateway' || applicationType == 'uaa')) { _%>
+        <%_ if (serviceDiscoveryType && (applicationType === 'microservice' || applicationType === 'gateway' || applicationType === 'uaa')) { _%>
 
         String configServerStatus = env.getProperty("configserver.status");
         log.info("\n----------------------------------------------------------\n\t" +
