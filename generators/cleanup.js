@@ -1,7 +1,7 @@
 /**
- * Copyright 2013-2017 the original author or authors from the JHipster project.
+ * Copyright 2013-2020 the original author or authors from the JHipster project.
  *
- * This file is part of the JHipster project, see http://www.jhipster.tech/
+ * This file is part of the JHipster project, see https://www.jhipster.tech/
  * for more information.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,35 +21,99 @@ const constants = require('./generator-constants');
 
 const ANGULAR_DIR = constants.ANGULAR_DIR;
 const CLIENT_MAIN_SRC_DIR = constants.CLIENT_MAIN_SRC_DIR;
+const CLIENT_TEST_SRC_DIR = constants.CLIENT_TEST_SRC_DIR;
+const SERVER_MAIN_RES_DIR = constants.SERVER_MAIN_RES_DIR;
 
 module.exports = {
     cleanupOldFiles,
-    cleanupOldServerFiles
+    cleanupOldServerFiles,
+    upgradeFiles
 };
+
 /**
- * Removes files that where generated in previous JHipster versions and therefore need to be removed
+ * Removes files that where generated in previous JHipster versions and therefore
+ * need to be removed.
+ *
+ * WARNING this only removes files created by the main generator. Each sub-generator
+ * should clean-up its own files: see the `cleanup` method in entity/index.js for cleaning
+ * up entities.
+ *
+ * @param {any} generator - reference to generator
  */
-function cleanupOldFiles(generator, javaDir, testDir) {
+function cleanupOldFiles(generator) {
     if (generator.isJhipsterVersionLessThan('3.2.0')) {
         // removeFile and removeFolder methods should be called here for files and folders to cleanup
         generator.removeFile(`${ANGULAR_DIR}components/form/uib-pager.config.js`);
         generator.removeFile(`${ANGULAR_DIR}components/form/uib-pagination.config.js`);
     }
+    if (generator.isJhipsterVersionLessThan('5.0.0')) {
+        generator.removeFile(`${ANGULAR_DIR}/app.route.ts`);
+        generator.removeFile(`${ANGULAR_DIR}shared/auth/account.service.ts`);
+        generator.removeFile(`${ANGULAR_DIR}shared/auth/auth-jwt.service.ts`);
+        generator.removeFile(`${ANGULAR_DIR}shared/auth/auth-session.service.ts`);
+        generator.removeFile(`${ANGULAR_DIR}shared/auth/csrf.service.ts`);
+        generator.removeFile(`${ANGULAR_DIR}shared/auth/state-storage.service.ts`);
+        generator.removeFile(`${ANGULAR_DIR}shared/auth/user-route-access-service.ts`);
+        generator.removeFile(`${ANGULAR_DIR}shared/language/language.constants.ts`);
+        generator.removeFile(`${ANGULAR_DIR}shared/language/language.helper.ts`);
+        generator.removeFile(`${ANGULAR_DIR}shared/login/login-modal.service.ts`);
+        generator.removeFile(`${ANGULAR_DIR}shared/login/login.service.ts`);
+        generator.removeFile(`${ANGULAR_DIR}shared/model/base-entity.ts`);
+        generator.removeFile(`${ANGULAR_DIR}shared/model/request-util.ts`);
+        generator.removeFile(`${ANGULAR_DIR}shared/user/account.model.ts`);
+        generator.removeFile(`${ANGULAR_DIR}shared/user/user.model.ts`);
+        generator.removeFile(`${ANGULAR_DIR}shared/user/user.service.ts`);
+        generator.removeFile(`${ANGULAR_DIR}admin/user-management/user-management-dialog.component.ts`);
+        generator.removeFile(`${ANGULAR_DIR}admin/user-management/user-modal.service.ts`);
+        generator.removeFile(`${ANGULAR_DIR}admin/user-management/user-modal.service.ts`);
+
+        generator.removeFile(`${CLIENT_TEST_SRC_DIR}spec/app/shared/user/user.service.spec.ts`);
+        generator.removeFile(`${CLIENT_TEST_SRC_DIR}spec/app/admin/user-management/user-management-dialog.component.spec.ts`);
+        generator.removeFile(`${CLIENT_TEST_SRC_DIR}spec/entry.ts`);
+        generator.removeFile(`${CLIENT_TEST_SRC_DIR}karma.conf.js`);
+    }
+    if (generator.isJhipsterVersionLessThan('5.8.0')) {
+        generator.removeFile(`${ANGULAR_DIR}admin/metrics/metrics-modal.component.html`);
+        generator.removeFile(`${ANGULAR_DIR}admin/metrics/metrics-modal.component.ts`);
+        generator.removeFile(`${CLIENT_TEST_SRC_DIR}spec/app/admin/metrics/metrics-modal.component.spec.ts`);
+    }
+    if (generator.isJhipsterVersionLessThan('6.3.0') && generator.configOptions && generator.configOptions.clientFramework === 'angularX') {
+        generator.removeFile(`${ANGULAR_DIR}account/index.ts`);
+        generator.removeFile(`${ANGULAR_DIR}admin/index.ts`);
+        generator.removeFile(`${ANGULAR_DIR}core/index.ts`);
+        generator.removeFile(`${ANGULAR_DIR}home/index.ts`);
+        generator.removeFile(`${ANGULAR_DIR}layouts/index.ts`);
+        generator.removeFile(`${ANGULAR_DIR}shared/index.ts`);
+        generator.removeFile(`${ANGULAR_DIR}shared/shared-common.module.ts`);
+    }
+
+    if (generator.isJhipsterVersionLessThan('6.3.0') && generator.configOptions && generator.configOptions.clientFramework === 'react') {
+        generator.removeFile('tslint.json');
+    }
+
+    if (generator.isJhipsterVersionLessThan('6.4.0') && generator.configOptions && generator.configOptions.clientFramework === 'angularX') {
+        generator.removeFile(`${ANGULAR_DIR}admin/admin.route.ts`);
+        generator.removeFile(`${ANGULAR_DIR}admin/admin.module.ts`);
+    }
 }
 
 /**
- * Removes server files that where generated in previous JHipster versions and therefore need to be removed
+ * Removes server files that where generated in previous JHipster versions and therefore
+ * need to be removed.
+ *
+ * @param {any} generator - reference to generator
+ * @param {string} javaDir - Java directory
+ * @param {string} testDir - Java tests directory
+ * @param {string} mainResourceDir - Main resources directory
+ * @param {string} testResourceDir - Test resources directory
  */
-function cleanupOldServerFiles(generator, javaDir, testDir) {
+function cleanupOldServerFiles(generator, javaDir, testDir, mainResourceDir, testResourceDir) {
     if (generator.isJhipsterVersionLessThan('3.5.0')) {
         generator.removeFile(`${javaDir}domain/util/JSR310DateTimeSerializer.java`);
         generator.removeFile(`${javaDir}domain/util/JSR310LocalDateDeserializer.java`);
     }
     if (generator.isJhipsterVersionLessThan('3.6.0')) {
         generator.removeFile(`${javaDir}config/HerokuDatabaseConfiguration.java`);
-    }
-    if (generator.isJhipsterVersionLessThan('3.8.1')) {
-        generator.removeFile(`${javaDir}config/JacksonConfiguration.java`);
     }
     if (generator.isJhipsterVersionLessThan('3.10.0')) {
         generator.removeFile(`${javaDir}config/CloudMongoDbConfiguration.java`);
@@ -95,4 +159,99 @@ function cleanupOldServerFiles(generator, javaDir, testDir) {
         generator.removeFile(`${javaDir}gateway/ratelimiting/RateLimitingRepository.java`);
         generator.removeFile(`${javaDir}config/cassandra/CustomZonedDateTimeCodec.java`);
     }
+    if (generator.isJhipsterVersionLessThan('4.7.1')) {
+        generator.removeFile(`${javaDir}web/rest/errors/ErrorVM.java`);
+        generator.removeFile(`${javaDir}web/rest/errors/ParameterizedErrorVM.java`);
+    }
+    if (generator.isJhipsterVersionLessThan('4.11.1')) {
+        generator.removeFile(`${CLIENT_MAIN_SRC_DIR}app/app.main-aot.ts`);
+    }
+    if (generator.isJhipsterVersionLessThan('4.13.1')) {
+        generator.config.delete('hibernateCache');
+    }
+    if (generator.isJhipsterVersionLessThan('5.0.0')) {
+        generator.removeFile(`${javaDir}config/ThymeleafConfiguration.java`);
+        generator.removeFile(`${javaDir}web/rest/ProfileInfoResource.java`);
+        generator.removeFile(`${mainResourceDir}mails/activationEmail.html`);
+        generator.removeFile(`${mainResourceDir}mails/creationEmail.html`);
+        generator.removeFile(`${mainResourceDir}mails/passwordResetEmail.html`);
+        generator.removeFile(`${mainResourceDir}mails/socialRegistrationValidationEmail.html`);
+        generator.removeFile(`${testResourceDir}mail/testEmail.html`);
+        generator.removeFile(`${testDir}web/rest/ProfileInfoResourceIT.java`);
+        generator.removeFile('gradle/mapstruct.gradle');
+    }
+    if (generator.isJhipsterVersionLessThan('5.2.2')) {
+        generator.removeFile(`${javaDir}config/ElasticsearchConfiguration.java`);
+        generator.removeFile('gradle/liquibase.gradle');
+
+        if (generator.authenticationType === 'oauth2' && generator.applicationType === 'microservice') {
+            generator.removeFolder(`${constants.DOCKER_DIR}realm-config`);
+            generator.removeFile(`${constants.DOCKER_DIR}keycloak.yml`);
+        }
+    }
+    if (generator.isJhipsterVersionLessThan('5.8.0')) {
+        generator.removeFile(`${javaDir}config/MetricsConfiguration.java`);
+        if (generator.databaseType === 'cassandra') {
+            generator.removeFile(`${testResourceDir}cassandra-random-port.yml`);
+        }
+    }
+    if (generator.isJhipsterVersionLessThan('6.0.0')) {
+        generator.removeFile(`${javaDir}web/rest/errors/CustomParameterizedException.java`);
+        generator.removeFile(`${javaDir}web/rest/errors/InternalServerErrorException.java`);
+        generator.removeFile(`${javaDir}web/rest/util/PaginationUtil.java`);
+        generator.removeFile(`${javaDir}web/rest/util/HeaderUtil.java`);
+        generator.removeFile(`${testDir}web/rest/util/PaginationUtilUnitTest.java`);
+        generator.removeFile(`${javaDir}web/rest/vm/LoggerVM.java`);
+        generator.removeFile(`${javaDir}web/rest/LogsResource.java`);
+        generator.removeFile(`${testDir}web/rest/LogsResourceIT.java`);
+        generator.removeFile(`${javaDir}config/OAuth2Configuration.java`);
+        generator.removeFile(`${javaDir}security/OAuth2AuthenticationSuccessHandler.java`);
+
+        generator.removeFolder(`${CLIENT_MAIN_SRC_DIR}app/shared/layout/header/menus`);
+        generator.removeFolder(`${CLIENT_TEST_SRC_DIR}spec/app/shared/layout/header/menus`);
+    }
+    if (generator.isJhipsterVersionLessThan('6.1.0')) {
+        generator.config.delete('blueprint');
+        generator.config.delete('blueprintVersion');
+    }
+    if (generator.isJhipsterVersionLessThan('6.5.2')) {
+        generator.removeFile(`${testDir}service/mapper/UserMapperIT.java`);
+        generator.removeFile(`${javaDir}service/${generator.upperFirstCamelCase(generator.baseName)}KafkaConsumer.java`);
+        generator.removeFile(`${javaDir}service/${generator.upperFirstCamelCase(generator.baseName)}KafkaProducer.java`);
+        generator.removeFile(`${testDir}web/rest/ClientForwardControllerIT.java`);
+    }
+    if (generator.isJhipsterVersionLessThan('6.6.1')) {
+        generator.removeFile(`${javaDir}web/rest/errors/EmailNotFoundException.java`);
+        generator.removeFile(`${javaDir}config/DefaultProfileUtil.java`);
+        generator.removeFolder(`${javaDir}service/util`);
+    }
+}
+
+/**
+ * Upgrade files.
+ *
+ * @param {any} generator - reference to generator
+ */
+function upgradeFiles(generator) {
+    let atLeastOneSuccess = false;
+    if (generator.isJhipsterVersionLessThan('6.1.0')) {
+        const langNameDiffer = function(lang) {
+            const langProp = lang.replace(/-/g, '_');
+            // Target file : change xx_yyyy_zz to xx_yyyy_ZZ to match java locales
+            const langJavaProp = langProp.replace(/_[a-z]+$/g, lang => lang.toUpperCase());
+            return langProp !== langJavaProp ? [langProp, langJavaProp] : undefined;
+        };
+        const languages = generator.config.get('languages');
+        languages
+            .map(langNameDiffer)
+            .filter(props => props)
+            .forEach(props => {
+                const code = generator.renameFile(
+                    `${SERVER_MAIN_RES_DIR}i18n/messages_${props[0]}.properties`,
+                    `${SERVER_MAIN_RES_DIR}i18n/messages_${props[1]}.properties`
+                );
+                atLeastOneSuccess = atLeastOneSuccess || code;
+            });
+    }
+    return atLeastOneSuccess;
 }

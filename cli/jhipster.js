@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 /**
- * Copyright 2013-2017 the original author or authors from the JHipster project.
+ * Copyright 2013-2020 the original author or authors from the JHipster project.
  *
- * This file is part of the JHipster project, see http://www.jhipster.tech/
+ * This file is part of the JHipster project, see https://www.jhipster.tech/
  * for more information.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,25 +18,22 @@
  * limitations under the License.
  */
 const semver = require('semver');
-const packageJson = require('../package.json');
-const logger = require('./utils').logger;
 const path = require('path');
+const packageJson = require('../package.json');
+const { logger } = require('./utils');
 
 const currentNodeVersion = process.versions.node;
 const minimumNodeVersion = packageJson.engines.node;
 
 if (!semver.satisfies(currentNodeVersion, minimumNodeVersion)) {
-    /* eslint-disable no-console */
-    logger.error(`You are running Node version ${currentNodeVersion
-    }\nJHipster requires Node version ${minimumNodeVersion
-    }\nPlease update your version of Node.`);
-    /* eslint-enable  */
-    process.exit(1);
+    logger.fatal(
+        `You are running Node version ${currentNodeVersion}\nJHipster requires Node version ${minimumNodeVersion}\nPlease update your version of Node.`
+    );
 }
 
 let preferLocal = true;
 
-// Don't use commander for parsing command line to avoid polluting it in cli.js 
+// Don't use commander for parsing command line to avoid polluting it in cli.js
 // --prefer-local: Always resolve node modules locally (useful when using linked module)
 if (process.argv.includes('upgrade') && !process.argv.includes('--prefer-local')) {
     // Prefer global version for `jhipster upgrade` to get most recent code
@@ -56,7 +53,7 @@ function requireCLI(preferLocal) {
             if (__dirname !== path.dirname(localCLI)) {
                 // load local version
                 /* eslint-disable import/no-dynamic-require */
-                logger.info('Using JHipster version installed locally in current project\'s node_modules');
+                logger.info("Using JHipster version installed locally in current project's node_modules");
                 require(localCLI);
                 return;
             }
